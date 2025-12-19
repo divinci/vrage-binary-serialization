@@ -14,12 +14,21 @@ public class GameEnvironmentInitializer
         _logger = logger;
     }
 
+    private static bool _isInitialized = false;
+
     public void Initialize()
     {
+        if (_isInitialized)
+        {
+            _logger.LogDebug("Game Environment already initialized.");
+            return;
+        }
+
         _logger.LogInformation("Initializing Game Environment...");
         InitializeMetadataManager();
         InitializeDefinitionManager();
         InitializeBumpAllocator();
+        _isInitialized = true;
         _logger.LogInformation("Game Environment Initialized.");
     }
 
@@ -54,6 +63,9 @@ public class GameEnvironmentInitializer
                 _logger.LogWarning("MetadataManager.Instance is null.");
                 return;
             }
+
+            // Check if context is already pushed? Usually PushContext is what we want.
+            // For now, _isInitialized flag at the top handles idempotency for our service.
 
             var pushContextMethod = metadataManagerType.GetMethod("PushContext", [typeof(IEnumerable<Assembly>)]);
 
@@ -142,6 +154,18 @@ public class GameEnvironmentInitializer
 
             // Get the current value (should be default struct)
             var instance = instanceField.GetValue(null);
+            if (instance == null) return;
+
+            var initializedProp = bumpAllocatorType.GetProperty("Initialized", BindingFlags.Public | BindingFlags.Instance);
+            if (initializedProp != null)
+            {
+                var isAlreadyInitialized = (bool?)initializedProp.GetValue(instance);
+                if (isAlreadyInitialized == true)
+                {
+                    _logger.LogDebug("BumpAllocator already initialized.");
+                    return;
+                }
+            }
 
             var initMethod = bumpAllocatorType.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Instance);
             if (initMethod != null)

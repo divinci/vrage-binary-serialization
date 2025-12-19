@@ -8,31 +8,58 @@ public static class DebugObjectConverter
 {
     public static object? ToDebugObject(object? obj)
     {
-        return Convert(obj, null, 0);
+        var context = new ConversionContext();
+        return Convert(obj, context, 0);
     }
 
-    private static object? Convert(object? obj, HashSet<object>? visited, int depth)
+    private class ConversionContext
+    {
+        public Dictionary<object, string> ReferenceIds { get; } = new(ReferenceEqualityComparer.Instance);
+        public int NextId { get; set; } = 1;
+    }
+
+    private static object? Convert(object? obj, ConversionContext context, int depth)
     {
         if (obj == null) return null;
-        if (depth > 50) return "[Max Depth Reached]";
+        if (depth > 200) return "[Max Depth Reached]"; // Increased depth limit
 
         var type = obj.GetType();
+        // Primitives pass through
         if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal) || type == typeof(Guid) || type == typeof(DateTime))
             return obj;
 
         if (obj is Type || type.Name == "IdentityId" || type.IsEnum)
             return obj.ToString();
 
+        // Handle References
         if (!type.IsValueType)
         {
-            visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-            if (visited.Contains(obj)) return "[Cycle]";
-            visited.Add(obj);
+            if (context.ReferenceIds.TryGetValue(obj, out var existingId))
+            {
+                // Return Reference
+                return new Dictionary<string, object?> { { "$ref", existingId } };
+            }
+            
+            // Register New ID
+            var newId = context.NextId++.ToString();
+            context.ReferenceIds[obj] = newId;
+
+            // Note: We need to inject this ID into the result container.
+            // We'll do it after creating the container.
         }
 
+        // --- Collections ---
+        
         if (obj is IDictionary dictionary)
         {
             var dict = new Dictionary<string, object?>();
+            
+            // Add ID if applicable
+            if (context.ReferenceIds.TryGetValue(obj, out var id))
+            {
+                dict["$id"] = id;
+            }
+
             foreach (var item in dictionary)
             {
                 object? key = null;
@@ -51,14 +78,12 @@ public static class DebugObjectConverter
                         key = itemType.GetProperty("Key")?.GetValue(item);
                         value = itemType.GetProperty("Value")?.GetValue(item);
                     }
-                    else
-                    {
-                        key = $"entry_{dict.Count}";
-                        value = item;
-                    }
                 }
 
-                dict[key?.ToString() ?? "null"] = Convert(value, visited, depth + 1);
+                if (key != null)
+                {
+                    dict[key.ToString() ?? "null"] = Convert(value, context, depth + 1);
+                }
             }
             return dict;
         }
@@ -66,16 +91,33 @@ public static class DebugObjectConverter
         if (obj is IEnumerable enumerable)
         {
             var list = new List<object?>();
-            var count = 0;
+            // var count = 0; // Truncation disabled for full validation
             foreach (var item in enumerable)
             {
-                if (count++ > 1000) { list.Add("[Truncated...]"); break; }
-                list.Add(Convert(item, visited, depth + 1));
+                // if (count++ > 10000) { list.Add("[Truncated...]"); break; }
+                list.Add(Convert(item, context, depth + 1));
             }
+
+            // Wrap in object if we need to preserve ID
+            if (context.ReferenceIds.TryGetValue(obj, out var id))
+            {
+                return new Dictionary<string, object?> 
+                { 
+                    { "$id", id },
+                    { "$values", list }
+                };
+            }
+
             return list;
         }
 
+        // --- Complex Objects ---
+
         var resultDict = new Dictionary<string, object?>();
+        if (context.ReferenceIds.TryGetValue(obj, out var objId))
+        {
+            resultDict["$id"] = objId;
+        }
         resultDict["$type"] = type.FullName;
 
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -86,7 +128,7 @@ public static class DebugObjectConverter
 
             try
             {
-                resultDict[prop.Name] = Convert(prop.GetValue(obj), visited, depth + 1);
+                resultDict[prop.Name] = Convert(prop.GetValue(obj), context, depth + 1);
             }
             catch (Exception ex)
             {
@@ -101,7 +143,7 @@ public static class DebugObjectConverter
 
             try
             {
-                resultDict[field.Name] = Convert(field.GetValue(obj), visited, depth + 1);
+                resultDict[field.Name] = Convert(field.GetValue(obj), context, depth + 1);
             }
             catch (Exception ex)
             {

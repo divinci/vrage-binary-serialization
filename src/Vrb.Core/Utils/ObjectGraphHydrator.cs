@@ -189,17 +189,58 @@ public static class ObjectGraphHydrator
         if (targetType.IsAssignableFrom(valueType)) return value;
 
         // Handle numeric conversions (Int64 -> Int32, Double -> Single)
-        if (targetType == typeof(int) && value is long l) return (int)l;
-        if (targetType == typeof(float) && value is double d) return (float)d;
-        if (targetType == typeof(byte) && value is long l2) return (byte)l2;
-        if (targetType == typeof(long) && value is int i2) return (long)i2;
-        
+        if (value is long l)
+        {
+            if (targetType == typeof(int)) return (int)l;
+            if (targetType == typeof(byte)) return (byte)l;
+            if (targetType == typeof(short)) return (short)l;
+            if (targetType == typeof(ushort)) return (ushort)l;
+            if (targetType == typeof(uint)) return (uint)l;
+            if (targetType == typeof(ulong)) return (ulong)l;
+            if (targetType == typeof(sbyte)) return (sbyte)l;
+            if (targetType == typeof(double)) return (double)l;
+            if (targetType == typeof(float)) return (float)l;
+            if (targetType == typeof(decimal)) return (decimal)l;
+        }
+
+        if (value is int i2)
+        {
+            if (targetType == typeof(long)) return (long)i2;
+            if (targetType == typeof(short)) return (short)i2;
+            if (targetType == typeof(ushort)) return (ushort)i2;
+            if (targetType == typeof(byte)) return (byte)i2;
+            if (targetType == typeof(uint)) return (uint)i2;
+            if (targetType == typeof(double)) return (double)i2;
+            if (targetType == typeof(float)) return (float)i2;
+            if (targetType == typeof(decimal)) return (decimal)i2;
+        }
+
+        if (value is double d)
+        {
+             if (targetType == typeof(float)) return (float)d;
+             if (targetType == typeof(decimal)) return (decimal)d;
+             if (targetType == typeof(int)) return (int)d;
+             if (targetType == typeof(long)) return (long)d;
+        }
+
         // Handle Enums (from int or string)
         if (targetType.IsEnum)
         {
             if (value is string s) return Enum.Parse(targetType, s);
             if (value is long l3) return Enum.ToObject(targetType, l3);
             if (value is int i) return Enum.ToObject(targetType, i);
+        }
+
+        // Handle Guid
+        if (targetType == typeof(Guid) && value is string sGuid)
+        {
+            return Guid.Parse(sGuid);
+        }
+
+        // Handle Nullable<T>
+        if (Nullable.GetUnderlyingType(targetType) is Type underlyingType)
+        {
+            return ConvertValue(value, underlyingType);
         }
 
         // Handle List/Array conversions
@@ -226,6 +267,31 @@ public static class ObjectGraphHydrator
                 }
                 return list;
             }
+            
+            // Generic IList implementation support (e.g. KeyedList<K, V>)
+            var iListInterface = targetType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IList<>));
+            if (iListInterface != null)
+            {
+                var elemType = iListInterface.GetGenericArguments()[0];
+                try 
+                {
+                    var list = Activator.CreateInstance(targetType) as IList;
+                    if (list != null)
+                    {
+                        foreach (var item in genericList)
+                        {
+                            list.Add(ConvertValue(item, elemType));
+                        }
+                        return list;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"[ObjectGraphHydrator] Failed to convert to generic IList: {ex}");
+                    // If we can't instantiate or populate, fall through
+                }
+            }
+
             if (targetType == typeof(HashSet<string>)) 
             {
                 return new HashSet<string>(genericList.OfType<string>());

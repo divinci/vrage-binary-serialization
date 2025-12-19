@@ -1,5 +1,7 @@
 # VRB Serialization Tool (Space Engineers 2)
 
+**NuGet Package:** [`Vrb.Core`](https://www.nuget.org/packages/Vrb.Core) (Version matches SE2 Build, e.g., `21190635.0.0`)
+
 A powerful modding utility for **Space Engineers 2** that allows you to serialize and deserialize binary save files (`.vrb`) to and from human-readable JSON. This enables players and modders to edit save data, inspect internal game structures, and create external tools that interact with SE2 save files.
 
 The tool leverages the game's own assemblies (`VRage.Library`, `Game2.Simulation`, etc.) to ensuring accurate data processing and full compatibility with the game's binary format.
@@ -40,8 +42,9 @@ Currently, the tool must be built from source.
     dotnet build vrb.sln -c Release
     ```
 
-3.  **Locate the executable:**
-    The built executable will be in `src/bin/Release/net9.0-windows/vrb.exe`.
+3.  **Locate the artifacts:**
+    - **CLI Tool:** `src/Vrb/bin/Release/net9.0-windows/vrb.exe`
+    - **Library:** `src/Vrb.Core/bin/Release/net9.0-windows/Vrb.Core.dll`
 
 ## CLI Usage
 
@@ -72,57 +75,37 @@ vrb.exe --toJson "savegame.vrb" --validate
 
 ## Library Usage (C# / .NET)
 
-You can use the core logic in your own .NET 9 applications.
+You can use the core logic in your own .NET 9 applications by referencing the **Vrb.Core** library.
 
 ### 1. Add Reference
-Add a reference to the `vrb` project or DLL.
+Add a reference to the `Vrb.Core` project or NuGet package.
 
-### 2. Initialize & Use
-Use the provided extension methods to register services and initialize the environment (which loads the game assemblies).
+### 2. Initialization & Usage
+Use the simplified static initializer to setup the environment and start converting files.
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using vrb;
 using vrb.Core;
 
-// 1. Setup DI Container
-var services = new ServiceCollection();
-services.AddLogging(builder => builder.AddConsole());
+// 1. Initialize (once at startup)
+Vrb.Initialize();
 
-// 2. Register VRB Services
-services.AddVrbServices();
+// 2. Convert VRB -> JSON
+var json = Vrb.Service.DeserializeVrb("savegame.vrb", TargetType.SaveGame);
 
-var provider = services.BuildServiceProvider();
-
-// 3. Initialize VRB Environment (Locates Game & Loads Assemblies)
-try 
-{
-    provider.InitializeVrb(); // Can pass explicit path: InitializeVrb("C:/GamePath")
-}
-catch (DirectoryNotFoundException)
-{
-    Console.WriteLine("Could not find Space Engineers 2 installation!");
-    return;
-}
-
-// 4. Use the Processing Service
-var processor = provider.GetRequiredService<VrbProcessingService>();
-
-// Example: Deserialize to JSON string (via redirect logic or custom handling)
-// Note: The current ProcessFile method writes to Console, custom integration 
-// might require adapting VrbProcessingService or using its internal logic.
-processor.ProcessFile("path/to/savegame.vrb", validate: false);
+// 3. Convert JSON -> VRB (pass the JSON string directly)
+Vrb.Service.SerializeJsonToVrb(json, "savegame_new.vrb", TargetType.SaveGame);
 ```
 
 ## Architecture
 
-The project is structured for modularity and ease of maintenance:
+The project is structured for modularity:
 
-*   **`src/Core`**: Core logic including `VrbProcessingService` (Orchestrator) and `GameEnvironmentInitializer`.
-*   **`src/Infrastructure`**: Handles external concerns like finding the game path (`GameInstallLocator`) and loading assemblies (`GameAssemblyManager`).
-*   **`src/Utils`**: Helpers for object graph manipulation, hydration, and reflection-based mapping.
-*   **`src/VrbSerializationSetup.cs`**: Extension methods for easy DI integration.
+*   **`src/Vrb`**: The Console CLI application entry point.
+*   **`src/Vrb.Core`**: The reusable Class Library containing all logic.
+    *   **`Core`**: Core logic including `VrbProcessingService` (Orchestrator) and `GameEnvironmentInitializer`.
+    *   **`Infrastructure`**: Handles external concerns like finding the game path (`GameInstallLocator`) and loading assemblies (`GameAssemblyManager`).
+    *   **`Utils`**: Helpers for object graph manipulation, hydration, and reflection-based mapping.
 
 ## Disclaimer
 
