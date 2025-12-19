@@ -426,3 +426,5 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+run_output.txt
+src/build_and_run_log.txt
