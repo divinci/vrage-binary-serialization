@@ -7,7 +7,7 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0</Version>
+    <Version>21190635</Version>
     <Authors>VRB Team</Authors>
     <Description>Space Engineers 2 VRB Serialization Tool</Description>
   </PropertyGroup>
