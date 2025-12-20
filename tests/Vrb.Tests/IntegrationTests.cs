@@ -1,8 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using vrb;
-using vrb.Core;
+using Vrb.Core;
 
 namespace Vrb.Tests;
 
@@ -44,7 +43,7 @@ public class IntegrationTests
         {
             // Initialize VRB (Sleek!)
             // We configure logging to Console for debug
-            vrb.Vrb.Initialize(configureLogging: builder => 
+            Vrb.Core.Vrb.Initialize(configureLogging: builder => 
             {
                 builder.ClearProviders();
                 builder.AddConsole(); 
@@ -56,7 +55,7 @@ public class IntegrationTests
         }
 
         // Act
-        var output = vrb.Vrb.Service!.DeserializeVrb(vrbPath, TargetType.SaveGame, validate);
+        var output = Vrb.Core.Vrb.Service!.DeserializeVrb(vrbPath, TargetType.SaveGame, validate);
 
         // Assert
         Assert.False(string.IsNullOrWhiteSpace(output), "Output should not be empty");

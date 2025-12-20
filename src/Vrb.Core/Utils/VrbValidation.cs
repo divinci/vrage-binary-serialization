@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
-using vrb.Infrastructure;
+using Vrb.Infrastructure;
 using System.IO;
 
-namespace vrb.Utils;
+namespace Vrb.Utils;
 
 public static class VrbValidation
 {

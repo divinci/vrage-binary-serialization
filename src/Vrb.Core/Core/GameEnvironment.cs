@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using System.Collections;
 using System.Reflection;
-using vrb.Infrastructure;
+using Vrb.Infrastructure;
 
-namespace vrb.Core;
+namespace Vrb.Core;
 
 public static class GameEnvironment
 {

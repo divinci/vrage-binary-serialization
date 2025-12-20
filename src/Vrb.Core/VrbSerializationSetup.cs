@@ -2,10 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.IO;
-using vrb.Core;
-using vrb.Infrastructure;
+using Vrb.Core;
+using Vrb.Infrastructure;
 
-namespace vrb;
+namespace Vrb.Core;
 
 public static class VrbSerializationSetup
 {

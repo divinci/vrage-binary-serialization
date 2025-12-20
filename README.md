@@ -2,9 +2,9 @@
 
 **NuGet Package:** [`Vrb.Core`](https://www.nuget.org/packages/Vrb.Core) (Version matches SE2 Build, e.g., `21190635.0.0`)
 
-A powerful modding utility for **Space Engineers 2** that allows you to serialize and deserialize binary save files (`.vrb`) to and from human-readable JSON. This enables players and modders to edit save data, inspect internal game structures, and create external tools that interact with SE2 save files.
+A modding utility for **Space Engineers 2** that allows you to serialize and deserialize binary save files (`.vrb`) to and from human-readable JSON. This enables players and modders to edit save data, inspect internal game structures, and create external tools that interact with SE2 save files.
 
-The tool leverages the game's own assemblies (`VRage.Library`, `Game2.Simulation`, etc.) to ensuring accurate data processing and full compatibility with the game's binary format.
+The tool leverages the game's own assemblies (`VRage.Library`, `Game2.Simulation`, etc.) to ensure accurate data processing and full compatibility with the game's binary format.
 
 **Current Platform Support:** Windows Only (due to game assembly dependencies).
 
@@ -13,9 +13,10 @@ The tool leverages the game's own assemblies (`VRage.Library`, `Game2.Simulation
 - **Bidirectional Conversion:**
   - **VRB to JSON:** Convert binary save files to structured JSON for easy editing in any text editor.
   - **JSON to VRB:** Rehydrate your modified JSON back into a valid `.vrb` file that the game can load.
-- **Full-Cycle Validation:** The `--validate` flag performs a lossless round-trip check (`VRB -> JSON -> VRB`) to ensure your data is preserved byte-for-byte.
+- **Validation:** Performs a lossless round-trip check on a `.vrb` file (`VRB -> JSON -> VRB`) to ensure your data is preserved byte-for-byte.
+- **Smart Detection:** Automatically identifies the internal structure of `.vrb` files via brute-force type checking and `.json` files via content inspection.
 - **Auto-Detection:** Automatically locates the Space Engineers 2 installation path via Steam registry keys or library folders.
-- **Library Mode:** Can be referenced by other C#/.NET 9 applications to add VRB support to your own tools.
+- **Library:** Can be referenced by other C#/.NET 9 applications to add VRB support to your own tools.
 - **Supported File Types:**
   - `savegame.vrb` (Entity Bundle)
   - `sessioncomponents.vrb` (Session Components Snapshot)
@@ -48,30 +49,33 @@ Currently, the tool must be built from source.
 
 ## CLI Usage
 
-The Command Line Interface (CLI) is the primary way to use the tool.
+The Command Line Interface (CLI) is the primary way to use the tool. It accepts one or two file paths as arguments.
 
 ### 1. Convert VRB to JSON
-Converts a binary save file to JSON. The output is printed to the console (STDOUT), so you should redirect it to a file.
+Provide the source `.vrb` file and the destination `.json` file.
 
 ```bash
-# Syntax: vrb.exe --toJson <path-to-vrb> > <output-json>
-vrb.exe --toJson "C:\Users\You\AppData\Roaming\SpaceEngineers2\SaveGames\MySave\savegame.vrb" > savegame.json
+# Syntax: vrb.exe <input.vrb> <output.json>
+vrb.exe "C:\Users\You\AppData\Roaming\SpaceEngineers2\SaveGames\MySave\savegame.vrb" "savegame.json"
 ```
 
 ### 2. Convert JSON to VRB
-Converts a JSON file back to a binary `.vrb` file. The output file will be created in the same directory as the input JSON, replacing the original extension (e.g., `savegame.json` -> `savegame.vrb`).
+Provide the source `.json` file and the destination `.vrb` file.
 
 ```bash
-# Syntax: vrb.exe --fromJson <path-to-json>
-vrb.exe --fromJson "savegame.json"
+# Syntax: vrb.exe <input.json> <output.vrb>
+vrb.exe "savegame.json" "savegame.vrb"
 ```
 
 ### 3. Validate Conversion (Lossless Check)
-Verifies that the file can be converted to JSON and back to binary without *any* data loss. It compares the binary hash of the re-created file against the original.
+Provide a single `.vrb` file path to perform a lossless round-trip check (`VRB -> JSON -> VRB`). It compares the binary hash of the re-created file against the original to ensure data integrity.
 
 ```bash
-vrb.exe --toJson "savegame.vrb" --validate
+# Syntax: vrb.exe <input.vrb>
+vrb.exe "savegame.vrb"
 ```
+
+> **Note on Smart Detection:** If you provide files with generic names (e.g., `data.vrb`), the tool will automatically attempt to detect the correct game structure by testing all known types or inspecting JSON metadata.
 
 ## Library Usage (C# / .NET)
 
@@ -84,16 +88,17 @@ Add a reference to the `Vrb.Core` project or NuGet package.
 Use the simplified static initializer to setup the environment and start converting files.
 
 ```csharp
-using vrb;
-using vrb.Core;
+using Vrb.Core;
 
 // 1. Initialize (once at startup)
+// Optionally pass a path; otherwise it auto-discovers SE2
 Vrb.Initialize();
 
-// 2. Convert VRB -> JSON
-var json = Vrb.Service.DeserializeVrb("savegame.vrb", TargetType.SaveGame);
+// 2. Convert VRB -> JSON (returns JSON string)
+// Use the ! operator or check for null if you are sure it's initialized
+var json = Vrb.Service!.DeserializeVrb("savegame.vrb", TargetType.SaveGame);
 
-// 3. Convert JSON -> VRB (pass the JSON string directly)
+// 3. Convert JSON -> VRB
 Vrb.Service.SerializeJsonToVrb(json, "savegame_new.vrb", TargetType.SaveGame);
 ```
 

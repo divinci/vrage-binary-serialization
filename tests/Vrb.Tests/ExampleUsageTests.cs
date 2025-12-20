@@ -1,5 +1,5 @@
-using vrb;
-using vrb.Core;
+using Vrb;
+using Vrb.Core;
 using System.IO;
 
 namespace Vrb.Tests;
@@ -22,14 +22,14 @@ public class ExampleUsageTests
         // --- START OF README EXAMPLE ---
         
         // 1. Initialize (once at startup)
-        vrb.Vrb.Initialize();
+        Vrb.Core.Vrb.Initialize();
 
         // 2. Convert VRB -> JSON
-        var json = vrb.Vrb.Service!.DeserializeVrb(vrbPath, TargetType.SaveGame);
+        var json = Vrb.Core.Vrb.Service!.DeserializeVrb(vrbPath, TargetType.SaveGame);
 
         // 3. Convert JSON -> VRB (pass the JSON string directly)
         var outputPath = Path.Combine(Path.GetTempPath(), "savegame_rehydrated_test.vrb");
-        vrb.Vrb.Service.SerializeJsonToVrb(json, outputPath, TargetType.SaveGame);
+        Vrb.Core.Vrb.Service.SerializeJsonToVrb(json, outputPath, TargetType.SaveGame);
 
         // --- END OF README EXAMPLE ---
 

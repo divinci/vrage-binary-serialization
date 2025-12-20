@@ -2,7 +2,7 @@ using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace vrb.Utils;
+namespace Vrb.Utils;
 
 public static class ObjectGraphSanitizer
 {

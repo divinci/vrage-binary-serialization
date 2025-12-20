@@ -2,9 +2,9 @@ using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using vrb.Infrastructure;
+using Vrb.Infrastructure;
 
-namespace vrb.Utils;
+namespace Vrb.Utils;
 
 public static class ObjectGraphHydrator
 {

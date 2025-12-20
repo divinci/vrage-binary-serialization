@@ -3,10 +3,10 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using vrb.Infrastructure;
-using vrb.Utils;
+using Vrb.Infrastructure;
+using Vrb.Utils;
 
-namespace vrb.Core;
+namespace Vrb.Core;
 
 public class VrbProcessingService
 {

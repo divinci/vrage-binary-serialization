@@ -25,7 +25,7 @@ jobs:
       run: dotnet pack src\Vrb.Core\Vrb.Core.csproj --configuration Release --no-build --output nupkgs
 
     - name: Publish to NuGet
-      run: dotnet nuget push D:\a\vrage-binary-serialization\vrage-binary-serialization\nupkgs\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push nupkgs\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
       if: github.ref == 'refs/heads/main'
 
     - name: Upload NuGet Package (Artifact)

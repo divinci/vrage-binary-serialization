@@ -8,8 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Version>1.0.0</Version>
-    <PackageVersion>21190635.0.0</PackageVersion>
-    <Authors>VRB Team</Authors>
+    <PackageId>Bjornabe.Vrb.Core</PackageId>
+    <PackageVersion>1.0.0.21190635</PackageVersion>
+    <Authors>Bjornabe</Authors>
     <Description>Space Engineers 2 VRB Serialization Library</Description>
   </PropertyGroup>
 

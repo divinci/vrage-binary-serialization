@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using vrb.Core;
+using Vrb.Core;
 
-namespace vrb;
+namespace Vrb.Core;
 
 public static class Vrb
 {

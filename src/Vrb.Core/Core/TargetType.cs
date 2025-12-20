@@ -1,4 +1,4 @@
-namespace vrb.Core;
+namespace Vrb.Core;
 
 public enum TargetType
 {

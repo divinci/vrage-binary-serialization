@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Reflection;
 
-namespace vrb.Utils;
+namespace Vrb.Utils;
 
 public static class JsonExtensions
 {

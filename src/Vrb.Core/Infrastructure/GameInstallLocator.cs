@@ -3,7 +3,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace vrb.Infrastructure;
+namespace Vrb.Infrastructure;
 
 public static class GameInstallLocator
 {

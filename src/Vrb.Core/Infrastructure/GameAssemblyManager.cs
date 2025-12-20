@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Reflection;
 
-namespace vrb.Infrastructure;
+namespace Vrb.Infrastructure;
 
 public static class GameAssemblyManager
 {
