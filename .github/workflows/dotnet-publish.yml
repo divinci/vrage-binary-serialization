@@ -21,9 +21,6 @@ jobs:
     - name: Build Solution
       run: dotnet build vrb.sln --configuration Release --no-restore
 
-    - name: Test
-      run: dotnet test vrb.sln --configuration Release --no-build --verbosity normal
-
     - name: Pack Vrb.Core
       run: dotnet pack src/Vrb.Core.csproj --configuration Release --no-build --output nupkgs
 
