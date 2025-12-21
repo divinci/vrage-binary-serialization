@@ -157,9 +157,14 @@ The JSON output includes engine-compatible metadata for proper deserialization:
 
 *   **`src/Vrb`**: The Console CLI application entry point.
 *   **`src/Vrb.Core`**: The reusable Class Library containing all logic.
-    *   **`Core`**: Core logic including `VrbProcessingService` (Orchestrator) and `GameEnvironmentInitializer`.
+    *   **`Core`**: Core logic including `VrbProcessingService` (Orchestrator), `GameEnvironmentInitializer`, and `TargetType` enum.
     *   **`Infrastructure`**: Handles external concerns like finding the game path (`GameInstallLocator`) and loading assemblies (`GameAssemblyManager`).
-    *   **`Utils`**: Helpers for object graph manipulation, hydration, and reflection-based mapping.
+    *   **`Utils`**: Shared utilities including:
+        *   `SerializationContextHelper` - Creates VRage serialization contexts
+        *   `HashHelper` - File and data hash computation
+        *   `TargetTypeHelper` - Detects VRB file types from filenames/JSON
+        *   `BumpAllocatorHelper` - Thread-local memory allocator initialization
+        *   `VrbValidation` - Round-trip validation utilities
 
 ## Tests
 
@@ -169,22 +174,43 @@ Run tests with:
 dotnet test tests/Vrb.Tests/Vrb.Tests.csproj --logger "console;verbosity=detailed"
 ```
 
-### Core Tests
+Tests are organized into three focused test files:
 
-| Test | File | Purpose |
-|------|------|---------|
-| `VrbRoundTrip_PreservesBinaryFidelity` | `BinaryFidelityTest.cs` | **Primary validation test.** Performs a complete VRB → JSON → VRB round-trip on `savegame.vrb` and verifies the output file is functionally identical (size within 1%, readable by engine). |
-| `VrbRoundTrip_SessionComponents` | `BinaryFidelityTest.cs` | Tests round-trip for `sessioncomponents.vrb` files to verify non-savegame VRB types work correctly. |
-| `SimplifiedDeveloperExperience_Test` | `ExampleUsageTests.cs` | Validates the README code examples work correctly. Ensures the simplified `Vrb.Initialize()` and `Vrb.Service` API functions as documented. |
-| `CanConvertVrbToJson` | `IntegrationTests.cs` | Basic integration test that converts a VRB file to JSON and validates the output is parseable JSON containing expected types. |
-| `CanConvertVrbToJsonWithValidation` | `IntegrationTests.cs` | Same as above but with validation enabled to test the validation code path. |
+### Library Tests (`LibraryTests.cs`)
 
-### CLI Tests
+Tests the `Vrb.Core` library API directly:
 
-| Test | File | Purpose |
-|------|------|---------|
-| `CliRoundTrip_SaveGame_PreservesData` | `CliRoundTripTest.cs` | **End-to-end CLI test.** Invokes `Program.Main` directly to convert VRB → JSON → VRB, then compares file sizes and verifies the output is readable. |
-| `CliValidation_SaveGame_Passes` | `CliRoundTripTest.cs` | Tests the single-argument validation mode and verifies it completes without errors. |
+| Test | Purpose |
+|------|---------|
+| `VrbToJson_SaveGame_ReturnsValidJson` | Converts savegame.vrb to JSON and validates the output structure. |
+| `VrbToJson_SessionComponents_ReturnsValidJson` | Tests sessioncomponents.vrb deserialization. |
+| `JsonToVrb_SaveGame_CreatesValidFile` | Converts JSON back to VRB and verifies file creation. |
+| `JsonToVrb_CompressionMethods_AllWork` | Tests all compression methods (None, ZLib, Brotli). |
+| `Validation_SaveGame_Passes` | Tests the validation mode completes without errors. |
+| `TargetTypeHelper_*` | Unit tests for the target type detection helper. |
+
+### CLI Tests (`CliTests.cs`)
+
+Tests the command-line interface by invoking `Program.Main` via reflection:
+
+| Test | Purpose |
+|------|---------|
+| `Cli_VrbToJson_CreatesJsonFile` | Tests `vrb.exe input.vrb output.json` conversion. |
+| `Cli_JsonToVrb_CreatesVrbFile` | Tests `vrb.exe input.json output.vrb` conversion. |
+| `Cli_Validation_CompletesWithoutError` | Tests single-argument validation mode. |
+| `Cli_FullRoundTrip_DataPreserved` | End-to-end: VRB → JSON → VRB → JSON, verifies data integrity. |
+
+### Validation Tests (`ValidationTests.cs`)
+
+Comprehensive round-trip and binary fidelity tests:
+
+| Test | Purpose |
+|------|---------|
+| `RoundTrip_SaveGame_PreservesBinaryFidelity` | **Primary validation test.** Full round-trip with hash comparison. |
+| `RoundTrip_SessionComponents_Succeeds` | Tests sessioncomponents.vrb round-trip. |
+| `RoundTrip_AllSaveGames_Succeed` | Tests all available save games in the user's save folder. |
+| `Compression_Comparison_ShowsSizeDifferences` | Compares output sizes across compression methods. |
+| `HashHelper_*` | Unit tests for the hash computation utility. |
 
 > **Note:** CLI tests invoke `Program.Main` directly via reflection rather than spawning a separate process, making them faster and easier to debug.
 

@@ -5,8 +5,22 @@ using System.Runtime.InteropServices;
 
 namespace Vrb.Infrastructure;
 
+/// <summary>
+/// Locates the Space Engineers 2 game installation directory.
+/// 
+/// Uses multiple detection methods in order of preference:
+/// <list type="number">
+///   <item><description>Common Steam installation paths</description></item>
+///   <item><description>Windows Registry (Steam install path)</description></item>
+///   <item><description>Steam library folders configuration</description></item>
+/// </list>
+/// </summary>
 public static class GameInstallLocator
 {
+    /// <summary>
+    /// Common Steam installation paths to check first.
+    /// These cover the most typical installation scenarios.
+    /// </summary>
     private static readonly string[] CommonPaths =
     [
         @"C:\Program Files (x86)\Steam\steamapps\common\Space Engineers 2",
@@ -15,13 +29,27 @@ public static class GameInstallLocator
         @"S:\Steam\steamapps\common\Space Engineers 2"
     ];
 
-    private static readonly string[] GameFolderNames = ["Space Engineers 2", "SpaceEngineers2", "Space Engineers II"];
+    /// <summary>
+    /// Possible folder names for the game installation.
+    /// Different versions or locales may use different names.
+    /// </summary>
+    private static readonly string[] GameFolderNames = 
+    [
+        "Space Engineers 2", 
+        "SpaceEngineers2", 
+        "Space Engineers II"
+    ];
 
+    /// <summary>
+    /// Attempts to find the Space Engineers 2 installation path.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostic output.</param>
+    /// <returns>The game installation path, or null if not found.</returns>
     public static string? FindGameInstallPath(ILogger logger)
     {
         logger.LogInformation("Attempting to find game install path...");
 
-        // Method 1: Try to find from common steam paths
+        // Method 1: Check common Steam installation paths
         foreach (var path in CommonPaths)
         {
             if (Directory.Exists(path))
@@ -31,7 +59,7 @@ public static class GameInstallLocator
             }
         }
 
-        // Method 2: Read registry
+        // Method 2: Use Windows Registry to find Steam, then search for game
         try
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -39,7 +67,7 @@ public static class GameInstallLocator
                 using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432Node\Valve\Steam");
                 if (key?.GetValue("InstallPath") is string steamPath && !string.IsNullOrEmpty(steamPath))
                 {
-                    // Check main steam apps
+                    // Check the main Steam apps folder
                     foreach (var name in GameFolderNames)
                     {
                         var fullPath = Path.Combine(steamPath, @"steamapps\common", name);
@@ -50,7 +78,7 @@ public static class GameInstallLocator
                         }
                     }
 
-                    // Check library folders
+                    // Method 3: Parse Steam library folders configuration
                     var libraryVdf = Path.Combine(steamPath, @"steamapps\libraryfolders.vdf");
                     if (File.Exists(libraryVdf))
                     {
@@ -73,6 +101,12 @@ public static class GameInstallLocator
         return null;
     }
 
+    /// <summary>
+    /// Parses the Steam libraryfolders.vdf file to find additional library locations.
+    /// </summary>
+    /// <param name="libraryVdf">Path to the libraryfolders.vdf file.</param>
+    /// <param name="logger">Logger for diagnostic output.</param>
+    /// <returns>The game path if found in a library folder, null otherwise.</returns>
     private static string? ParseLibraryFolders(string libraryVdf, ILogger logger)
     {
         try
@@ -80,16 +114,21 @@ public static class GameInstallLocator
             var lines = File.ReadAllLines(libraryVdf);
             foreach (var line in lines)
             {
+                // Look for "path" entries in the VDF file
                 if (line.Contains("\"path\""))
                 {
                     var parts = line.Split('"');
                     if (parts.Length > 3)
                     {
+                        // VDF uses escaped backslashes
                         var libPath = parts[3].Replace("\\\\", "\\");
+                        
+                        // Check if game exists in this library
                         foreach (var name in GameFolderNames)
                         {
                             var gameLibPath = Path.Combine(libPath, @"steamapps\common", name);
-                            if (Directory.Exists(gameLibPath)) return gameLibPath;
+                            if (Directory.Exists(gameLibPath)) 
+                                return gameLibPath;
                         }
                     }
                 }
@@ -102,4 +141,3 @@ public static class GameInstallLocator
         return null;
     }
 }
-

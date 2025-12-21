@@ -13,9 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vrb.Core", "src\Vrb.Core\Vr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vrb", "src\Vrb\Vrb.csproj", "{C34E77DD-D2F5-48CB-8020-DBE438AD5068}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{876EB5EF-B027-499A-942E-9A7BB7E75F77}"
 	ProjectSection(SolutionItems) = preProject
-		REPORT.md = REPORT.md
+		README.md = README.md
+		docs\VRB_README.md = docs\VRB_README.md
 	EndProjectSection
 EndProject
 Global
