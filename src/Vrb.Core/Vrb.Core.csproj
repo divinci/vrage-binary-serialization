@@ -12,6 +12,9 @@
     <PackageVersion>1.1.0.21190635</PackageVersion>
     <Authors>Bjornabe</Authors>
     <Description>Space Engineers 2 VRB Serialization Library</Description>
+    <RepositoryUrl>https://github.com/divinci/vrage-binary-serialization</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <ProjectUrl>https://github.com/divinci/vrage-binary-serialization</ProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

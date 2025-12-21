@@ -36,7 +36,7 @@ Currently, the tool must be built from source.
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/vrage-binary-serialization.git
+    git clone https://github.com/divinci/vrage-binary-serialization.git
     cd vrage-binary-serialization
     ```
 
