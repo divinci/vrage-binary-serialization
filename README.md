@@ -1,6 +1,8 @@
 # VRB Serialization Tool (Space Engineers 2)
 
-**NuGet Package:** [`Vrb.Core`](https://www.nuget.org/packages/Vrb.Core) (Version matches SE2 Build, e.g., `21190635.0.0`)
+[![NuGet](https://img.shields.io/nuget/v/Bjornabe.Vrb.Core.svg?style=flat-square&logo=nuget&label=Bjornabe.Vrb.Core)](https://www.nuget.org/packages/Bjornabe.Vrb.Core/)
+
+**NuGet Package:** [`Bjornabe.Vrb.Core`](https://www.nuget.org/packages/Bjornabe.Vrb.Core/) (Version matches SE2 Build, e.g., `21190635.0.0`)
 
 A modding utility for **Space Engineers 2** that allows you to serialize and deserialize binary save files (`.vrb`) to and from human-readable JSON. This enables players and modders to edit save data, inspect internal game structures, and create external tools that interact with SE2 save files.
 
