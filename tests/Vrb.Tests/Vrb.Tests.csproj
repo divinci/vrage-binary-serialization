@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Vrb.Core\Vrb.Core.csproj" />
+    <ProjectReference Include="..\..\src\Vrb\Vrb.csproj" />
   </ItemGroup>
 
   <ItemGroup>

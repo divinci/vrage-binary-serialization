@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using System.IO;
+using System.Text.Json;
 using Vrb;
 using Vrb.Core;
 using Vrb.Utils;
@@ -179,23 +180,28 @@ result.WithParsed(options =>
                 targetType = GetTargetTypeFromFilename(Path.GetFileNameWithoutExtension(inputPath));
             }
 
-            // If still null, try to inspect the JSON content
+            // If still null, try to inspect the JSON content for $Type field
             if (targetType == null)
             {
-                 logger.LogWarning("Filename detection failed. Inspecting JSON content...");
+                 logger.LogWarning("Filename detection failed. Inspecting JSON content for $Type...");
                  try 
                  {
                      var jsonText = File.ReadAllText(inputPath);
-                     var obj = ObjectGraphHydrator.Hydrate(jsonText);
+                     using var doc = JsonDocument.Parse(jsonText);
                      
-                     if (obj != null)
+                     if (doc.RootElement.TryGetProperty("$Type", out var typeProp))
                      {
-                         var typeName = obj.GetType().FullName;
+                         var typeName = typeProp.GetString();
                          if (typeName != null)
                          {
                              if (typeName.Contains("EntityBundle")) targetType = TargetType.SaveGame;
                              else if (typeName.Contains("SessionComponentsSnapshot")) targetType = TargetType.SessionComponents;
                              else if (typeName.Contains("AssetJournal")) targetType = TargetType.AssetJournal;
+                             
+                             if (targetType != null)
+                             {
+                                 logger.LogInformation("Detected type from JSON $Type field: {Type}", targetType);
+                             }
                          }
                      }
                  }
