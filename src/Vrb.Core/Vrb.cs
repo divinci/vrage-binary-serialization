@@ -15,6 +15,11 @@ public static class Vrb
     public static VrbProcessingService? Service => _serviceProvider?.GetService<VrbProcessingService>();
 
     /// <summary>
+    /// Gets the logger factory. Returns null if Initialize() has not been called.
+    /// </summary>
+    public static ILoggerFactory? LoggerFactory => _serviceProvider?.GetService<ILoggerFactory>();
+
+    /// <summary>
     /// Initializes the VRB library, setting up internal services and the game environment.
     /// This method is idempotent; calling it multiple times has no effect after the first successful call.
     /// </summary>

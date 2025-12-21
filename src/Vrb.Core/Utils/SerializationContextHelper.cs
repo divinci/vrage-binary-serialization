@@ -1,5 +1,6 @@
 using System.IO;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Vrb.Infrastructure;
 
 namespace Vrb.Utils;
@@ -42,12 +43,23 @@ internal static class SerializationContextHelper
             }
         }
 
-        // Add DummyDefinitionSerializationContext (required for definition references)
-        var dummyDefContextType = vrageLibrary.GetType("Keen.VRage.Library.Definitions.Internal.DummyDefinitionSerializationContext");
-        if (dummyDefContextType != null)
+        // Add a smart DefinitionSerializationContext that uses our loaded definitions
+        // This allows proper type resolution for abstract definition types
+        var logger = Vrb.Core.Vrb.LoggerFactory?.CreateLogger("SerializationContextHelper");
+        var smartContext = SmartDefinitionSerializationContextFactory.Create(logger);
+        if (smartContext != null)
         {
-            var instance = Activator.CreateInstance(dummyDefContextType);
-            if (instance != null) customContexts.Add(instance);
+            customContexts.Add(smartContext);
+        }
+        else
+        {
+            // Fallback to DummyDefinitionSerializationContext if smart context creation fails
+            var dummyDefContextType = vrageLibrary.GetType("Keen.VRage.Library.Definitions.Internal.DummyDefinitionSerializationContext");
+            if (dummyDefContextType != null)
+            {
+                var instance = Activator.CreateInstance(dummyDefContextType);
+                if (instance != null) customContexts.Add(instance);
+            }
         }
 
         // Build the typed array for the constructor
@@ -98,12 +110,22 @@ internal static class SerializationContextHelper
             }
         }
 
-        // Add DummyDefinitionSerializationContext
-        var dummyDefContextType = vrageLibrary.GetType("Keen.VRage.Library.Definitions.Internal.DummyDefinitionSerializationContext");
-        if (dummyDefContextType != null)
+        // Add a smart DefinitionSerializationContext that uses our loaded definitions
+        var jsonLogger = Vrb.Core.Vrb.LoggerFactory?.CreateLogger("SerializationContextHelper");
+        var smartContextForJson = SmartDefinitionSerializationContextFactory.Create(jsonLogger);
+        if (smartContextForJson != null)
         {
-            var instance = Activator.CreateInstance(dummyDefContextType);
-            if (instance != null) customContexts.Add(instance);
+            customContexts.Add(smartContextForJson);
+        }
+        else
+        {
+            // Fallback to DummyDefinitionSerializationContext
+            var dummyDefContextType = vrageLibrary.GetType("Keen.VRage.Library.Definitions.Internal.DummyDefinitionSerializationContext");
+            if (dummyDefContextType != null)
+            {
+                var instance = Activator.CreateInstance(dummyDefContextType);
+                if (instance != null) customContexts.Add(instance);
+            }
         }
 
         // Build the typed array

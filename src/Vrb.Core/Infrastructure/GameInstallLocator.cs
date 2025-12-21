@@ -18,6 +18,10 @@ namespace Vrb.Infrastructure;
 public static class GameInstallLocator
 {
     /// <summary>
+    /// Gets the cached game installation path after FindGameInstallPath has been called.
+    /// </summary>
+    public static string? CachedGamePath { get; private set; }
+    /// <summary>
     /// Common Steam installation paths to check first.
     /// These cover the most typical installation scenarios.
     /// </summary>
@@ -52,11 +56,12 @@ public static class GameInstallLocator
         // Method 1: Check common Steam installation paths
         foreach (var path in CommonPaths)
         {
-            if (Directory.Exists(path))
-            {
-                logger.LogInformation("Found game path in common locations: {Path}", path);
-                return path;
-            }
+                if (Directory.Exists(path))
+                {
+                    logger.LogInformation("Found game path in common locations: {Path}", path);
+                    CachedGamePath = path;
+                    return path;
+                }
         }
 
         // Method 2: Use Windows Registry to find Steam, then search for game
@@ -74,6 +79,7 @@ public static class GameInstallLocator
                         if (Directory.Exists(fullPath))
                         {
                             logger.LogInformation("Found game path via registry: {Path}", fullPath);
+                            CachedGamePath = fullPath;
                             return fullPath;
                         }
                     }
@@ -86,6 +92,7 @@ public static class GameInstallLocator
                         if (libPath != null)
                         {
                             logger.LogInformation("Found game path via libraryfolders.vdf: {Path}", libPath);
+                            CachedGamePath = libPath;
                             return libPath;
                         }
                     }
