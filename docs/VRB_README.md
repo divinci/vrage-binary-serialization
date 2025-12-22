@@ -135,6 +135,9 @@ The `KeyedList<TKey, TValue>` is a custom collection type used extensively in th
     *   Contains `Roots` (Count of root entities).
 *   **`sessioncomponents.vrb`**: Contains session-level components (GameMode, Settings, Player Data).
 *   **`assetjournal.vrb`**: Contains asset streaming data.
+*   **`definitionsets.vrb`**: Root type is `Keen.VRage.Library.Definitions.DefinitionSetCollection`.
+    *   Contains game definitions (blocks, items, components, etc.).
+    *   Located in the game installation directory under `GameData/` and `VRage/GameData/`.
 
 ## 6. Implementation Notes
 

@@ -75,6 +75,44 @@ public class VrbTestFixture : IDisposable
     }
 
     /// <summary>
+    /// Finds a definitionsets.vrb file from the game installation directory.
+    /// </summary>
+    /// <returns>Full path to a definitionsets.vrb file, or null if not found.</returns>
+    public string? FindDefinitionSetsFile()
+    {
+        var gamePath = Vrb.Infrastructure.GameInstallLocator.CachedGamePath;
+        if (string.IsNullOrEmpty(gamePath))
+            return null;
+
+        var knownPaths = new[]
+        {
+            Path.Combine(gamePath, @"GameData\Vanilla\Content\definitionsets.vrb"),
+            Path.Combine(gamePath, @"VRage\GameData\Engine\Content\definitionsets.vrb")
+        };
+
+        return knownPaths.FirstOrDefault(File.Exists);
+    }
+
+    /// <summary>
+    /// Gets all definitionsets.vrb files from the game installation directory.
+    /// </summary>
+    /// <returns>Full paths to all definitionsets.vrb files found.</returns>
+    public IEnumerable<string> GetAllDefinitionSetsFiles()
+    {
+        var gamePath = Vrb.Infrastructure.GameInstallLocator.CachedGamePath;
+        if (string.IsNullOrEmpty(gamePath))
+            return Enumerable.Empty<string>();
+
+        var knownPaths = new[]
+        {
+            Path.Combine(gamePath, @"GameData\Vanilla\Content\definitionsets.vrb"),
+            Path.Combine(gamePath, @"VRage\GameData\Engine\Content\definitionsets.vrb")
+        };
+
+        return knownPaths.Where(File.Exists);
+    }
+
+    /// <summary>
     /// Gets all save game directories (for testing multiple files).
     /// </summary>
     public IEnumerable<string> GetAllSaveDirectories()

@@ -23,6 +23,7 @@ The tool leverages the game's own assemblies (`VRage.Library`, `Game2.Simulation
   - `savegame.vrb` (Entity Bundle)
   - `sessioncomponents.vrb` (Session Components Snapshot)
   - `assetjournal.vrb` (Asset Journal)
+  - `definitionsets.vrb` (Definition Set Collection)
 
 ## Prerequisites
 
@@ -83,8 +84,11 @@ vrb.exe "savegame.vrb"
 
 You can use the core logic in your own .NET 9 applications by referencing the **Vrb.Core** library.
 
-### 1. Add Reference
-Add a reference to the `Vrb.Core` project or NuGet package.
+### 1. Add NuGet Package
+
+```bash
+dotnet add package Bjornabe.Vrb.Core
+```
 
 ### 2. Initialization & Usage
 Use the simplified static initializer to setup the environment and start converting files.
@@ -184,6 +188,7 @@ Tests the `Vrb.Core` library API directly:
 |------|---------|
 | `VrbToJson_SaveGame_ReturnsValidJson` | Converts savegame.vrb to JSON and validates the output structure. |
 | `VrbToJson_SessionComponents_ReturnsValidJson` | Tests sessioncomponents.vrb deserialization. |
+| `VrbToJson_DefinitionSets_ReturnsValidJson` | Tests definitionsets.vrb deserialization. |
 | `JsonToVrb_SaveGame_CreatesValidFile` | Converts JSON back to VRB and verifies file creation. |
 | `JsonToVrb_CompressionMethods_AllWork` | Tests all compression methods (None, ZLib, Brotli). |
 | `Validation_SaveGame_Passes` | Tests the validation mode completes without errors. |

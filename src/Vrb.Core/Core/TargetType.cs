@@ -4,5 +4,6 @@ public enum TargetType
 {
     SaveGame,
     SessionComponents,
-    AssetJournal
+    AssetJournal,
+    DefinitionSets
 }

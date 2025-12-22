@@ -7,7 +7,7 @@ namespace Vrb.Tests;
 
 /// <summary>
 /// Tests the Vrb.Core library API directly.
-/// Tests the three core functions:
+/// Tests the core functions:
 /// <list type="number">
 ///   <item><description>VRB → JSON (DeserializeVrb)</description></item>
 ///   <item><description>JSON → VRB (SerializeJsonToVrb)</description></item>
@@ -86,6 +86,38 @@ public class LibraryTests : IClassFixture<VrbTestFixture>
 
         using var doc = JsonDocument.Parse(json);
         Assert.NotNull(doc);
+    }
+
+    /// <summary>
+    /// Tests that a DefinitionSets VRB file can be deserialized to valid JSON.
+    /// </summary>
+    [Fact]
+    public void VrbToJson_DefinitionSets_ReturnsValidJson()
+    {
+        var vrbPath = _fixture.FindDefinitionSetsFile();
+        if (vrbPath == null)
+        {
+            _output.WriteLine("No definitionsets.vrb found. Skipping test.");
+            return;
+        }
+
+        _output.WriteLine($"Testing: {vrbPath}");
+
+        var json = Vrb.Core.Vrb.Service!.DeserializeVrb(vrbPath, TargetType.DefinitionSets, validate: false);
+
+        Assert.NotNull(json);
+        Assert.NotEmpty(json);
+        _output.WriteLine($"JSON size: {json.Length:N0} characters");
+
+        using var doc = JsonDocument.Parse(json);
+        Assert.NotNull(doc);
+
+        if (doc.RootElement.TryGetProperty("$Type", out var typeProp))
+        {
+            var typeName = typeProp.GetString();
+            Assert.Contains("DefinitionSetCollection", typeName ?? "");
+            _output.WriteLine($"$Type: {typeName}");
+        }
     }
 
     #endregion
@@ -204,6 +236,8 @@ public class LibraryTests : IClassFixture<VrbTestFixture>
     [InlineData("sessioncomponents", TargetType.SessionComponents)]
     [InlineData("SessionComponents", TargetType.SessionComponents)]
     [InlineData("assetjournal", TargetType.AssetJournal)]
+    [InlineData("definitionsets", TargetType.DefinitionSets)]
+    [InlineData("DefinitionSets", TargetType.DefinitionSets)]
     public void TargetTypeHelper_GetFromFilename_ReturnsCorrectType(string filename, TargetType expected)
     {
         var result = TargetTypeHelper.GetFromFilename(filename);

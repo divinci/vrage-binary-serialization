@@ -358,7 +358,7 @@ With proper definition loading:
 
 - `DefinitionsHelper` loads 11,428 definitions from game files
 - `SmartDefinitionSerializationContext` resolves abstract types correctly
-- All VRB file types (SaveGame, SessionComponents, AssetJournal) work
+- All VRB file types (SaveGame, SessionComponents, AssetJournal, DefinitionSets) work
 
 ### 10.3. Future Enhancements
 

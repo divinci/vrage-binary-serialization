@@ -18,6 +18,7 @@ public static class TargetTypeHelper
     /// GetFromFilename("savegame") => TargetType.SaveGame
     /// GetFromFilename("sessioncomponents") => TargetType.SessionComponents
     /// GetFromFilename("assetjournal") => TargetType.AssetJournal
+    /// GetFromFilename("definitionsets") => TargetType.DefinitionSets
     /// </example>
     public static TargetType? GetFromFilename(string fileName)
     {
@@ -38,6 +39,11 @@ public static class TargetTypeHelper
         if (fileName.Contains("assetjournal", StringComparison.OrdinalIgnoreCase))
         {
             return TargetType.AssetJournal;
+        }
+
+        if (fileName.Contains("definitionsets", StringComparison.OrdinalIgnoreCase))
+        {
+            return TargetType.DefinitionSets;
         }
 
         return null;
@@ -68,6 +74,8 @@ public static class TargetTypeHelper
                         return TargetType.SessionComponents;
                     if (typeName.Contains("AssetJournal"))
                         return TargetType.AssetJournal;
+                    if (typeName.Contains("DefinitionSetCollection"))
+                        return TargetType.DefinitionSets;
                 }
             }
         }
@@ -92,6 +100,7 @@ public static class TargetTypeHelper
             TargetType.SaveGame => ("Keen.VRage.Core.Game.Systems.EntityBundle", "VRage.Core.Game"),
             TargetType.SessionComponents => ("Keen.Game2.Simulation.RuntimeSystems.Saves.SessionComponentsSnapshot", "Game2.Simulation"),
             TargetType.AssetJournal => ("Keen.Game2.Game.EngineComponents.AssetJournal", "Game2.Game"),
+            TargetType.DefinitionSets => ("Keen.VRage.Library.Definitions.DefinitionSetCollection", "VRage.Library"),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown target type")
         };
     }
